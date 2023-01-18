@@ -6,33 +6,38 @@
      </div>
    </div>
   </div>
-  <div class="container">
+   <!-- spinner -->
+   <div v-if="loading">
+    <div class="container">
+      <div class="row">
+        <div class="col">
+          <spinner/>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Error -->
+  <div v-if="!loading && errorMessage">
+    <div class="container">
+      <div class="row">
+        <div class="col">
+          <p class="h5 text-danger fw-bold">{{ errorMessage }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="container"  v-if="!loading && isDone()">
    <div class="row">
      <div class="col-md-4">
-       <form action="">
+       <form @submit.prevent="updateSubmit()">
          <div class="md-2">
-           <input type="text" placeholder="Name" class="form-control">
+           <input type="text" v-model="contact.name" placeholder="Name" class="form-control">
          </div>
          <div class="md-2">
-           <input type="text" placeholder="Photo url" class="form-control">
+           <input type="text" v-model="contact.detail" placeholder="Details" class="form-control">
          </div>
-         <div class="md-2">
-           <input type="text" placeholder="email" class="form-control">
-         </div>
-         <div class="md-2">
-           <input type="text" placeholder="mobile" class="form-control">
-         </div>
-         <div class="md-2">
-           <input type="text" placeholder="company" class="form-control">
-         </div>
-         <div class="md-2">
-           <input type="text" placeholder="title " class="form-control">
-         </div>
-         <div class="md-2">
-           <select name="" id="" class="form-control">
-             <option value="">select group</option>
-           </select>
-         </div>
+         
+        
          <div class="md-2">
            <input type="submit" value="Update" class="btn btn-success">
          </div>
@@ -46,8 +51,49 @@
 </template>
 
 <script>
-
+import { ContactService } from '@/services/ContactService';
+import Spinner from '../components/Spinner.vue';
 export default {
-  name: 'EditContact'
+  name: 'EditContact',
+  components: { Spinner },
+  data: function (){
+    return {
+      contactId: this.$route.params.contactId,
+      loading:false,
+      contact: {
+        name : '',
+        detail : '',
+      },
+      errorMessage: null
+    }
+  },
+  created: async function (){
+    try {
+      this.loading = true;
+      let response = await ContactService.getContact(this.contactId);
+      this.contact = response.data.data;
+      this.loading = false;
+    } catch (error) {
+      this.errorMessage = error;
+      this.loading = false;
+    }
+  },
+  methods :{
+    isDone : function (){
+      return Object.keys(this.contact).length > 0 ;
+    },
+    updateSubmit : async function(){
+    try {
+      let response = await ContactService.UpdateContact(this.contact, this.contactId);
+      if (response) {
+        return this.$router.push('/');
+      } else {
+        return this.$router.push(`contacts/edit/${this.contactId}`);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  }
 }
 </script>

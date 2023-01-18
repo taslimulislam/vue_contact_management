@@ -9,29 +9,19 @@
    <div class="container">
     <div class="row">
       <div class="col-md-4">
-        <form action="">
+        <form @submit.prevent="submitCreate()">
           <div class="md-2">
-            <input type="text" placeholder="Name" class="form-control">
+            <input type="text" v-model="contact.name" placeholder="Name" class="form-control">
           </div>
           <div class="md-2">
-            <input type="text" placeholder="Photo url" class="form-control">
+            <input type="text" v-model="contact.detail" placeholder="Details" class="form-control">
           </div>
-          <div class="md-2">
-            <input type="text" placeholder="email" class="form-control">
-          </div>
-          <div class="md-2">
-            <input type="text" placeholder="mobile" class="form-control">
-          </div>
-          <div class="md-2">
-            <input type="text" placeholder="company" class="form-control">
-          </div>
-          <div class="md-2">
-            <input type="text" placeholder="title " class="form-control">
-          </div>
-          <div class="md-2">
-            <select name="" id="" class="form-control">
+          
+           <div class="md-2">
+            <select v-model="contact.groups" class="form-control" v-if="groups.length > 0">
               <option value="">select group</option>
-            </select>
+              <option :value="group.id" v-for="group of groups" :key="group.id">{{group.name}}</option>
+            </select> 
           </div>
           <div class="md-2">
             <input type="submit" value="Create" class="btn btn-success">
@@ -46,7 +36,45 @@
 </template>
 
 <script>
+
+import {ContactService} from "../services/ContactService.js";
+// import Spinner from '../components/Spinner.vue';
+
 export default {
-  name: 'AddContact'
+  name: 'AddContact',
+  // components: { Spinner },
+  data: function () {
+    return {
+      contact: {
+        name : '',
+        detail : '',
+       
+      },
+      groups : []
+
+    }
+  },
+  // created : async function (){
+  //   try {
+  //     let response = await ContactService.getAllGroups();
+  //     this.groups = response.data;
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // },
+  methods : {
+    submitCreate : async function(){
+    try {
+      let response = await ContactService.CreateContact(this.contact);
+      if (response) {
+        return this.$router.push('/');
+      } else {
+        return this.$router.push('contacts/add')
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  }
 }
 </script>

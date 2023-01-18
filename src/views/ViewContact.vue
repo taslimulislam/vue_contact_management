@@ -6,7 +6,27 @@
      </div>
    </div>
   </div>
-  <div class="container">
+  <!-- spinner -->
+  <div v-if="loading">
+    <div class="container">
+      <div class="row">
+        <div class="col">
+          <spinner/>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Error -->
+  <div v-if="!loading && errorMessage">
+    <div class="container">
+      <div class="row">
+        <div class="col">
+          <p class="h5 text-danger fw-bold">{{ errorMessage }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="container" v-if="!loading && isDone()">
     <div class="row">
       <div class="col">
         <div class="row align-items-center">
@@ -15,12 +35,10 @@
         </div>
         <div class="col-md-6">
           <ul class="list-group">
-            <li class="list-group-item"><span class="fw-bold">Name</span></li>
-            <li class="list-group-item"><span class="fw-bold">Email</span></li>
-            <li class="list-group-item"><span class="fw-bold">Mobile</span></li>
-            <li class="list-group-item"><span class="fw-bold">Company</span></li>
-            <li class="list-group-item"><span class="fw-bold">Name</span></li>
-            <li class="list-group-item"><span class="fw-bold">Name</span></li>
+            <li class="list-group-item"><span class="fw-bold">Name: </span>{{ contact.name }}</li>
+            <li class="list-group-item"><span class="fw-bold">Details: </span>{{ contact.detail }}</li>
+            <li class="list-group-item"><span class="fw-bold">Date: </span>{{ contact.created_at }}</li>
+
           </ul>
         </div>
         </div>
@@ -35,8 +53,34 @@
 </template>
 
 <script>
-
+import { ContactService } from '@/services/ContactService';
+import Spinner from '../components/Spinner.vue';
 export default {
-  name: 'ViewContact'
+  name: 'ViewContact',
+  components: { Spinner },
+  data: function (){
+    return {
+      contactId: this.$route.params.contactId,
+      loading:false,
+      contact:{},
+      errorMessage: null
+    }
+  },
+  created: async function (){
+    try {
+      this.loading = true;
+      let response = await ContactService.getContact(this.contactId);
+      this.contact = response.data.data;
+      this.loading = false;
+    } catch (error) {
+      this.errorMessage = error;
+      this.loading = false;
+    }
+  },
+  methods :{
+    isDone : function (){
+      return Object.keys(this.contact).length > 0 ;
+    }
+  }
 }
 </script>
